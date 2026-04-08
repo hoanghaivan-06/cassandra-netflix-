@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Netflix Demo</title>
+  <style>
+    body {
+      background: #141414;
+      color: white;
+      font-family: Arial;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    input {
+      padding: 10px;
+      width: 300px;
+      border-radius: 5px;
+      border: none;
+      margin-bottom: 20px;
+    }
+
+
+    .movies {
+      display: flex;
+      overflow-x: auto; 
+      overflow-y: hidden;
+      gap: 20px;
+      padding: 40px 20px; 
+      scroll-behavior: smooth; 
+      white-space: nowrap; 
+    }
+
+    
+    .movies::-webkit-scrollbar {
+      display: none;
+    }
+
+    .card {
+      background: #222;
+      padding: 15px;
+      border-radius: 10px;
+      width: 180px;      
+      flex: 0 0 auto;    
+      transition: 0.3s;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: scale(1.1);
+      background: #333;
+    }
+
+    .card img {
+      width: 100%;
+      border-radius: 10px;
+    }
+
+    button {
+
+    .card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+      margin-top: 10px;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .like {
+      background: red;
+      color: white;
+    }
+
+    .watch {
+      background: green;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🎬 Netflix Demo</h1>
+
+<input type="text" placeholder="Search movie..." 
+onchange="send('search', this.value)">
+
+<div style="display: flex; align-items: center; justify-content: center;">
+  <button id="left-arrow" style="font-size: 2rem; background: none; border: none; color: white; cursor: pointer;">&#8592;</button>
+  <div class="movies" id="movies-list" style="flex: 1 1 auto;"></div>
+  <button id="right-arrow" style="font-size: 2rem; background: none; border: none; color: white; cursor: pointer;">&#8594;</button>
+</div>
+
+<h2>Lịch sử hoạt động</h2>
+<div id="history" style="max-width:600px;margin:20px auto;text-align:left;background:#222;padding:15px;border-radius:10px;min-height:40px;color:white;"></div>
+
+
+<script>
+// Danh sách phim
+const movies = [
+  { img: 'images/Avenger.jpg', name: 'Avengers' },
+  { img: 'images/Batman.jpg', name: 'Batman' },
+  { img: 'images/Interstella.jpg', name: 'Interstellar' },
+  { img: 'images/conan.jpg', name: 'Conan' },
+  { img: 'images/inception.jpg', name: 'Inception' },
+  { img: 'images/oppenheimer.jpg', name: 'Oppenheimer' },
+  { img: 'images/spiderman.jpg', name: 'Spiderman' }
+];
+
+window.addEventListener('DOMContentLoaded', () => {
+  const moviesList = document.getElementById('movies-list');
+  if (moviesList) {
+    movies.forEach(movie => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <img src="${movie.img}">
+        <p>${movie.name}</p>
+        <button class="watch" onclick="send('watch','${movie.name}')">Watch</button>
+        <button class="like" onclick="send('like','${movie.name}')">Like</button>
+      `;
+      moviesList.appendChild(card);
+    });
+  }
+  // Xử lý cuộn khi bấm mũi tên
+  document.getElementById('left-arrow').onclick = () => {
+    moviesList.scrollBy({ left: -250, behavior: 'smooth' });
+  };
+  document.getElementById('right-arrow').onclick = () => {
+    moviesList.scrollBy({ left: 250, behavior: 'smooth' });
+  };
+
+  // Lấy lịch sử hoạt động
+  fetch('http://127.0.0.1:5000/history')
+    .then(res => res.json())
+    .then(data => {
+      const historyDiv = document.getElementById('history');
+      if (data && data.length > 0) {
+        historyDiv.innerHTML = '<ul style="padding-left:20px;">' +
+          data.map(item => `<li>${item.time} - <b>${item.action}</b> phim <b>${item.movie}</b></li>`).join('') +
+          '</ul>';
+      } else {
+        historyDiv.innerText = 'Chưa có hoạt động.';
+      }
+    })
+    .catch(() => {
+      const historyDiv = document.getElementById('history');
+      historyDiv.innerText = 'Không lấy được lịch sử.';
+    });
+});
+</script>
+
+</div>
+
+<p id="status"></p>
+
+<script>
+function send(action, movie) {
+  fetch('http://127.0.0.1:5000/action', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({action: action, movie: movie})
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("status").innerText = "Sent: " + action + " " + movie;
+  });
+}
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
