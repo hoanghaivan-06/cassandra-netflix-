@@ -9,6 +9,25 @@ import pytz
 
 app = Flask(__name__)
 
+# Bảng phân loại phim
+movie_categories = {
+    "Avengers": "action",
+    "Batman": "action",
+    "Spiderman": "action",
+    "Chernobyl": "history",
+    "Oppenheimer": "history",
+    "Conan": "detective",
+    "Sherlock Holmes": "detective",
+    "Interstellar": "scifi",
+    "Inception": "scifi",
+    "Titanic": "romance",
+    "La La Land": "romance"
+}
+
+# Danh sách phim theo thể loại
+category_movies = {}
+for m, c in movie_categories.items():
+    category_movies.setdefault(c, []).append(m)
 CORS(app)
 
 # connect Cassandra
@@ -29,6 +48,19 @@ def action():
     """, (USER_ID, action, movie))
 
     return jsonify({"status": "ok"})
+
+
+# API gợi ý phim cùng thể loại
+@app.route('/suggest', methods=['POST'])
+def suggest():
+    data = request.json
+    movie = data['movie']
+    cat = movie_categories.get(movie)
+    if not cat:
+        return jsonify([])
+    # Gợi ý các phim cùng thể loại, trừ phim hiện tại
+    suggestions = [m for m in category_movies[cat] if m != movie]
+    return jsonify(suggestions)
 
 
 @app.route('/history', methods=['GET'])

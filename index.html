@@ -98,6 +98,10 @@ onchange="send('search', this.value)">
   <button id="right-arrow" style="font-size: 2rem; background: none; border: none; color: white; cursor: pointer;">&#8594;</button>
 </div>
 
+
+<h2>Gợi ý phim cùng thể loại</h2>
+<div id="suggestions" class="movies" style="min-height:280px;"></div>
+
 <h2>Lịch sử hoạt động</h2>
 <div id="history" style="max-width:600px;margin:20px auto;text-align:left;background:#222;padding:15px;border-radius:10px;min-height:40px;color:white;"></div>
 
@@ -111,7 +115,11 @@ const movies = [
   { img: 'images/conan.jpg', name: 'Conan' },
   { img: 'images/inception.jpg', name: 'Inception' },
   { img: 'images/oppenheimer.jpg', name: 'Oppenheimer' },
-  { img: 'images/spiderman.jpg', name: 'Spiderman' }
+  { img: 'images/spiderman.jpg', name: 'Spiderman' },
+  { img: 'images/Chernobyl.jpg', name: 'Chernobyl' },
+  { img: 'images/La_la_land.jpg', name: 'La La Land' },
+  { img: 'images/Sherlock_Holmes.jpg', name: 'Sherlock Holmes' },
+  { img: 'images/Titanic.jpg', name: 'Titanic' }
 ];
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -159,6 +167,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
 </div>
 
+
+<h2>Gợi ý phim cùng thể loại</h2>
+<div id="suggestions" class="movies" style="min-height:280px;"></div>
+
 <p id="status"></p>
 
 <script>
@@ -171,16 +183,40 @@ function send(action, movie) {
   .then(res => res.json())
   .then(data => {
     document.getElementById("status").innerText = "Sent: " + action + " " + movie;
+    // Sau khi gửi action, gọi API suggest
+    fetch('http://127.0.0.1:5000/suggest', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({movie: movie})
+    })
+    .then(res => res.json())
+    .then(suggestions => {
+      const suggestionsDiv = document.getElementById("suggestions");
+      suggestionsDiv.innerHTML = '';
+      if (suggestions && suggestions.length > 0) {
+        // Render poster cho từng phim gợi ý
+        suggestions.forEach(name => {
+          // Tìm thông tin phim trong danh sách movies
+          const movieObj = movies.find(m => m.name === name);
+          if (movieObj) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+              <img src="${movieObj.img}">
+              <p>${movieObj.name}</p>
+            `;
+            suggestionsDiv.appendChild(card);
+          }
+        });
+      } else {
+        suggestionsDiv.innerHTML = '<p>Không có gợi ý.</p>';
+      }
+    });
   });
 }
 </script>
 
 </body>
 </html>
-
-
-
-
-
 
 
